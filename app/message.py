@@ -29,7 +29,6 @@ msg[50006] = {"descriptionEn": 'Send SMS error!', "description": 'ไม่ส�
 msg[70001] = {"descriptionEn": 'Create token error', "description": 'ไม่สามารถสร้างรหัสผ่านได้' }
 msg[80000] = {"descriptionEn": 'Invalid credencial', "description": 'ไม่สามารถ อัปเกรดกระเป๋าเงินได้' }
 
-print(msg)
 def getMsg(code):
     return msg[code]
     
