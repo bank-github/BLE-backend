@@ -72,11 +72,11 @@ async def add(user : User):
         if doc:
             deCode = enCode.verify(user.password, doc["password"])
             if not deCode:
-                raise HTTPException(status_code=401, detail="Incorrect password")
+                raise HTTPException(status_code=401, detail=getMsg(40104))
             doc['_id'] = str(doc['_id'])
             return doc
         else:
-            raise HTTPException(status_code=404, detail=getMsg(40402))
+            raise HTTPException(status_code=401, detail=getMsg(40104))
     except HTTPException as httpErr:
         raise httpErr
     except Exception as err:

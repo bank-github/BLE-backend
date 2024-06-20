@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from bson.objectid import ObjectId
 from app.database import db_intance
 from app.models.modelTags import Tags, CreateTags, UpdateTags
@@ -11,12 +11,16 @@ router = APIRouter()
 async def gets():
     try:
         result = []
+        totalDoc = db_intance.get_collection("tags").count_documents({})
         doc = db_intance.get_collection("tags").find({})
         if doc:
             for rs in doc:
                 rs['_id'] = str(rs['_id'])
                 result.append(rs)
-            return result
+            return {
+                'total': totalDoc,
+                'data': result
+            }
         else:
             raise HTTPException(status_code=404, detail=getMsg(40401))
     except HTTPException as httpErr:
@@ -25,14 +29,24 @@ async def gets():
         print(err)
         raise HTTPException(status_code=500, detail=getMsg(50002))
 
-# get specific data tags by id
-@router.get('/get/{id}')
-async def get(id: str):
+# get with pagination
+@router.get('/gets/pagination')
+async def get(page: int = Query(1, ge=1), perPage: int = Query(10, ge=1)):
     try:
-        doc = db_intance.get_collection("tags").find_one({"_id": ObjectId(id)})
+        result = []
+        skip = (page - 1) * perPage
+        totalDoc = db_intance.get_collection("tags").count_documents({})
+        doc = db_intance.get_collection("tags").find({}).skip(skip).limit(perPage)
         if doc:
-            doc['_id'] = str(doc['_id'])
-            return doc
+            for d in doc:
+                d['_id'] = str(d['_id'])
+                result.append(d)
+            return {
+                'total': totalDoc,
+                'page': page,
+                'perPage': perPage,
+                'data': result
+            }
         else:
             raise HTTPException(status_code=404, detail=getMsg(40401))
     except HTTPException as httpErr:
@@ -43,16 +57,20 @@ async def get(id: str):
     
 # get tags by mac address
 @router.get('/getMac/{mac}')
-async def get(mac: str):
+async def getMac(mac: str):
     try:
         result = []
         query = {"tagMac": {"$regex": mac, "$options": "i"}}
+        totalDoc = db_intance.get_collection("tags").count_documents(query)
         doc = db_intance.get_collection("tags").find(query)
         if doc:
             for rs in doc:
                 rs['_id'] = str(rs['_id'])
                 result.append(rs)
-            return result
+            return {
+                'total': totalDoc,
+                'data': result
+            }
         else:
             raise HTTPException(status_code=404, detail=getMsg(40401))
     except HTTPException as httpErr:
@@ -81,6 +99,8 @@ async def add(tags : Tags):
 @router.patch('/update/{id}')
 async def update(id: str, updateTags : UpdateTags):
     try:
+        if not len(id)== 24:
+            raise HTTPException(status_code=403, detail=getMsg(40300))
         rs = {}
         doc = db_intance.get_collection("tags").update_one(
             {'_id':ObjectId(id)},
@@ -106,9 +126,11 @@ async def update(id: str, updateTags : UpdateTags):
 @router.delete('/delete/{id}')
 async def delete(id: str):
     try:
+        if not len(id) == 24:
+            raise HTTPException(status_code=403, detail=getMsg(40300))
         doc = db_intance.get_collection("tags").delete_one({'_id':ObjectId(id)})
         if doc.deleted_count == 1:
-            return {"status": id + " deleted"}
+            return {"detail": id + " deleted"}
         else:
             raise HTTPException(status_code=404, detail=getMsg(40401))
     except HTTPException as httpErr:
