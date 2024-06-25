@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.routes import manageTags
 from app.routes import manageUser
+from app.routes import manageSignalReport
 from datetime import datetime
 from starlette.middleware.cors import CORSMiddleware
 
@@ -22,6 +23,7 @@ app.add_middleware(
 # app.include_router(setting_message.router, prefix='/settings', tags=['settings']) #can use
 app.include_router(manageTags.router, prefix='/tags', tags=['tags'])
 app.include_router(manageUser.router, prefix='/user', tags=['user'])
+app.include_router(manageSignalReport.router, prefix='/report', tags=['report'])
 
 @app.get('/')
 async def root():
