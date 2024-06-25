@@ -10,9 +10,9 @@ router = APIRouter()
 @router.get('/gets/{mac}')
 async def gets(mac: str):
     try:
-        print(datetime.now()- timedelta(hours=7))
+        print(datetime.now()- timedelta(hours=1))
         result = []
-        doc = db_intance.get_collection("SignalReport").find({"tagMac": mac, "timeStamp":{"$gt": datetime.now()-timedelta(hours=8)}}).sort({"timeStamp": -1})
+        doc = db_intance.get_collection("SignalReport").find({"tagMac": mac, "timeStamp":{"$gt": datetime.now()-timedelta(hours=1)}}).sort({"timeStamp": -1})
         if doc:
             for rs in doc:
                 rs['_id'] = str(rs['_id'])
