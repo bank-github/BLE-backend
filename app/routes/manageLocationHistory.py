@@ -16,7 +16,7 @@ async def gets():
             for rs in doc:
                 rs['_id'] = str(rs['_id'])
                 dt_object = datetime.fromisoformat(str(rs['timeStamp']))+timedelta(hours=7)
-                rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M")
+                rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M:%S")
                 result.append(rs)
             return result
         else:
@@ -36,7 +36,7 @@ async def gets(mac: str):
             for rs in doc:
                 rs['_id'] = str(rs['_id'])
                 dt_object = datetime.fromisoformat(str(rs['timeStamp']))+timedelta(hours=7)
-                rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M")
+                rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M:%S")
                 result.append(rs)
             return result
         else:
