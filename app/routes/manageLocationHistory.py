@@ -12,8 +12,14 @@ async def gets():
     try:
         result = []
         doc = db_intance.get_collection("LocationHistory").find().sort({"timeStamp": -1})
+         # Fetch tags data
+        tags = list(db_intance.get_collection("tags").find())
+        tags_dict = {tag["tagMac"]: tag for tag in tags}
         if doc:
             for rs in doc:
+                tag_mac = rs["tagMac"]
+                if tag_mac in tags_dict:
+                    rs["assetName"] = tags_dict[tag_mac].get("assetName")
                 rs['_id'] = str(rs['_id'])
                 dt_object = datetime.fromisoformat(str(rs['timeStamp']))+timedelta(hours=7)
                 rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M:%S")
@@ -32,8 +38,14 @@ async def gets(mac: str):
     try:
         result = []
         doc = db_intance.get_collection("LocationHistory").find(({"tagMac": mac})).sort({"timeStamp": -1})
+         # Fetch tags data
+        tags = list(db_intance.get_collection("tags").find())
+        tags_dict = {tag["tagMac"]: tag for tag in tags}
         if doc:
             for rs in doc:
+                tag_mac = rs["tagMac"]
+                if tag_mac in tags_dict:
+                    rs["assetName"] = tags_dict[tag_mac].get("assetName")
                 rs['_id'] = str(rs['_id'])
                 dt_object = datetime.fromisoformat(str(rs['timeStamp']))+timedelta(hours=7)
                 rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M:%S")

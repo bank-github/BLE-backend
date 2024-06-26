@@ -8,7 +8,6 @@ class Location(BaseModel):
     location: str
     avg_rssi: float
     timeStamp: datetime
-    assetName: Optional[str] = None  # Optional field, default to None if not present
 
 class UpdateLocation(Location):
     tagMac: Optional[str] = None

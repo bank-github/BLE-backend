@@ -26,9 +26,6 @@ async def update_rssi():
             'deviceClass': {'$in': ["arubaTag", "iBeacon"]}, "timeStamp": {"$gt": datetime.now() - timedelta(hours=1)}
         }).sort([("timeStamp", -1)]))
 
-        # Fetch tags data
-        tags = list(db_intance.get_collection("tags").find())
-        tags_dict = {tag["tagMac"]: tag for tag in tags}
 
         if data:
             # Convert timeStamp to datetime if necessary
@@ -64,10 +61,6 @@ async def update_rssi():
 
                 # Prepare the data for insertion
                 output_json = list(highest_rssi_per_tagMac.values())
-                for output in output_json:
-                    tag_mac = output["tagMac"]
-                    if tag_mac in tags_dict:
-                        output["assetName"] = tags_dict[tag_mac].get("assetName")
 
                 for output in output_json:
                     create = await updateCurrent(output)
