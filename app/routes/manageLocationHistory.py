@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 from app.database import db_intance
-from app.models.modelHistory import History
+from app.models.modelLocaion import UpdateLocation
 from app.message import getMsg
 
 router = APIRouter()
@@ -46,3 +46,10 @@ async def gets(mac: str):
     except Exception as err:
         print(err)
         raise HTTPException(status_code=500, detail=getMsg(50002))
+    
+async def updateHistory(updateLocation : UpdateLocation):
+    try:
+        db_intance.get_collection("LocationHistory").insert_one(updateLocation)
+        return print("Add history: " + updateLocation['tagMac'])
+    except Exception as err:
+        return print(err)
