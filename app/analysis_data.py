@@ -84,7 +84,7 @@ def run_update_rssi():
 # Initialize the scheduler
 def scheduler():
     scheduler = BackgroundScheduler()
-    trigger = IntervalTrigger(seconds=10)
+    trigger = IntervalTrigger(minutes=1)
     scheduler.add_job(run_update_rssi, trigger)
     scheduler.start()
 
