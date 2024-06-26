@@ -23,7 +23,7 @@ async def update_rssi():
 
         # Fetch data with deviceClass "arubaTag" or "iBeacon"
         data = list(db_intance.get_collection("SignalReport").find({
-            'deviceClass': {'$in': ["arubaTag", "iBeacon"]}, "timeStamp": {"$gt": datetime.now() - timedelta(hours=8)}
+            'deviceClass': {'$in': ["arubaTag", "iBeacon"]}, "timeStamp": {"$gt": datetime.now() - timedelta(hours=1)}
         }).sort([("timeStamp", -1)]))
 
         # Fetch tags data
