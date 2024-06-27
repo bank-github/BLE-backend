@@ -23,7 +23,7 @@ async def update_rssi():
 
         # Fetch data with deviceClass "arubaTag" or "iBeacon"
         data = list(db_intance.get_collection("SignalReport").find({
-            'deviceClass': {'$in': ["arubaTag", "iBeacon"]}, "timeStamp": {"$gt": datetime.now() - timedelta(hours=1)}
+            'deviceClass': {'$in': ["arubaTag", "iBeacon"]}
         }).sort([("timeStamp", -1)]))
 
 
@@ -33,39 +33,33 @@ async def update_rssi():
                 if isinstance(dt["timeStamp"], str):
                     dt["timeStamp"] = datetime.strptime(dt["timeStamp"], "%Y-%m-%dT%H:%M:%S")
 
-            # Find the latest timestamp
-            latest_timestamp = max(record["timeStamp"] for record in data)
-            time_threshold = latest_timestamp - timedelta(seconds=30)
 
-            # Filter records within the last 30 seconds of the latest timestamp
-            relevant_data = [record for record in data if time_threshold <= record["timeStamp"] <= latest_timestamp]
+            highest_rssi_per_tagMac = {}
 
-            if relevant_data:
-                highest_rssi_per_tagMac = {}
+            for record in data:
+                tag_mac = record["tagMac"]
+                location = record["location"]
+                timeStamp = record["timeStamp"]
+                rssi_values = [rssi['rssi'] for rssi in record["rssi"]]
+                avg_rssi = np.mean(rssi_values)
 
-                for record in relevant_data:
-                    tag_mac = record["tagMac"]
-                    location = record["location"]
-                    rssi_values = [rssi['rssi'] for rssi in record["rssi"]]
-                    avg_rssi = np.mean(rssi_values)
-
-                    # Update the highest avg_rssi for each tagMac
-                    if tag_mac not in highest_rssi_per_tagMac or avg_rssi > highest_rssi_per_tagMac[tag_mac]["avg_rssi"]:
-                        highest_rssi_per_tagMac[tag_mac] = {
-                            "tagMac": tag_mac,
-                            "deviceClass": record["deviceClass"],
-                            "location": location,
-                            "avg_rssi": avg_rssi,
-                            "timeStamp": record["timeStamp"]
+                # Update the highest avg_rssi for each tagMac
+                if tag_mac not in highest_rssi_per_tagMac or avg_rssi > highest_rssi_per_tagMac[tag_mac]["avg_rssi"] or timeStamp > highest_rssi_per_tagMac[tag_mac]["timeStamp"] :
+                    highest_rssi_per_tagMac[tag_mac] = {
+                        "tagMac": tag_mac,
+                        "deviceClass": record["deviceClass"],
+                        "location": location,
+                        "avg_rssi": avg_rssi,
+                        "timeStamp": record["timeStamp"]
                         }
 
                 # Prepare the data for insertion
-                output_json = list(highest_rssi_per_tagMac.values())
+            output_json = list(highest_rssi_per_tagMac.values())
 
-                for output in output_json:
-                    create = await updateCurrent(output)
-                    if create:
-                        await updateHistory(output)
+            for output in output_json:
+                create = await updateCurrent(output)
+                if create:
+                    await updateHistory(output)
         else:
             print("No data to insert")
     finally:
@@ -74,11 +68,31 @@ async def update_rssi():
 def run_update_rssi():
     asyncio.run(update_rssi())
 
+async def delete_old_data():
+    print("Starting delete_old_data function")
+    data = list(db_intance.get_collection("SignalReport").find())
+    latest_timestamp = max(record["timeStamp"] for record in data)
+    cutoff_time = latest_timestamp - timedelta(hours=2)
+    result = db_intance.get_collection("SignalReport").delete_many({
+        'timeStamp': {'$lt': cutoff_time}
+    })
+    print(f"Deleted {result.deleted_count} documents older than {cutoff_time}")
+
+def run_delete_old_data():
+    asyncio.run(delete_old_data())
+
 # Initialize the scheduler
 def scheduler():
     scheduler = BackgroundScheduler()
-    trigger = IntervalTrigger(minutes=1)
-    scheduler.add_job(run_update_rssi, trigger)
+
+    # Job to update RSSI every minute
+    trigger_update = IntervalTrigger(minutes=1)
+    scheduler.add_job(run_update_rssi, trigger_update)
+
+    # Job to delete old data every 2 hours
+    trigger_delete = IntervalTrigger(hours=2)
+    scheduler.add_job(run_delete_old_data, trigger_delete)
+
     scheduler.start()
 
 scheduler()
