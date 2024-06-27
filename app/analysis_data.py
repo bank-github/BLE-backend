@@ -28,7 +28,7 @@ async def update_rssi():
             .find(
                 {
                     "deviceClass": {"$in": ["arubaTag", "iBeacon"]},
-                    "timeStamp": {"$gt": datetime.now() - timedelta(hours=1)},
+                    "timeStamp": {"$gt": datetime.now() - timedelta(seconds=40)},
                 }
             )
             .sort([("timeStamp", -1)])
@@ -42,21 +42,10 @@ async def update_rssi():
                         dt["timeStamp"], "%Y-%m-%dT%H:%M:%S"
                     )
 
-            # Find the latest timestamp
-            latest_timestamp = max(record["timeStamp"] for record in data)
-            time_threshold = latest_timestamp - timedelta(seconds=30)
-
-            # Filter records within the last 30 seconds of the latest timestamp
-            relevant_data = [
-                record
-                for record in data
-                if time_threshold <= record["timeStamp"] <= latest_timestamp
-            ]
-
-            if relevant_data:
+            if data:
                 highest_rssi_per_tagMac = {}
 
-                for record in relevant_data:
+                for record in data:
                     tag_mac = record["tagMac"]
                     location = record["location"]
                     rssi_values = [rssi["rssi"] for rssi in record["rssi"]]
@@ -76,6 +65,7 @@ async def update_rssi():
 
                 # Prepare the data for insertion
                 output_json = list(highest_rssi_per_tagMac.values())
+
             # find all tags
             tags = db_intance.get_collection("tags").find({})
             # get tagMac to array
@@ -112,7 +102,7 @@ async def delete_old_data():
     print("Starting delete_old_data function")
     data = list(db_intance.get_collection("SignalReport").find())
     latest_timestamp = max(record["timeStamp"] for record in data)
-    cutoff_time = latest_timestamp - timedelta(hours=2)
+    cutoff_time = latest_timestamp - timedelta(minutes=10)
     result = db_intance.get_collection("SignalReport").delete_many({
         'timeStamp': {'$lt': cutoff_time}
     })
@@ -131,7 +121,7 @@ def scheduler():
     scheduler.add_job(run_update_rssi, trigger_update)
 
     # Job to delete old data every 2 hours
-    trigger_delete = IntervalTrigger(hours=2)
+    trigger_delete = IntervalTrigger(minutes=10)
     scheduler.add_job(run_delete_old_data, trigger_delete)
 
     scheduler.start()
