@@ -20,6 +20,7 @@ async def gets():
                 tag_mac = rs["tagMac"]
                 if tag_mac in tags_dict:
                     rs["assetName"] = tags_dict[tag_mac].get("assetName")
+                    rs["deviceClass"] = tags_dict[tag_mac].get("deviceClass")
                 rs['_id'] = str(rs['_id'])
                 dt_object = datetime.fromisoformat(str(rs['timeStamp']))+timedelta(hours=7)
                 rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M:%S")
@@ -46,6 +47,7 @@ async def gets(mac: str):
                 tag_mac = rs["tagMac"]
                 if tag_mac in tags_dict:
                     rs["assetName"] = tags_dict[tag_mac].get("assetName")
+                    rs["deviceClass"] = tags_dict[tag_mac].get("deviceClass")
                 rs['_id'] = str(rs['_id'])
                 dt_object = datetime.fromisoformat(str(rs['timeStamp']))+timedelta(hours=7)
                 rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M:%S")

@@ -20,6 +20,7 @@ async def gets():
                 tag_mac = rs["tagMac"]
                 if tag_mac in tags_dict:
                     rs["assetName"] = tags_dict[tag_mac].get("assetName")
+                    rs["deviceClass"] = tags_dict[tag_mac].get("deviceClass")
                 rs['_id'] = str(rs['_id'])
                 dt_object = datetime.fromisoformat(str(rs['timeStamp']))+timedelta(hours=7)
                 rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M:%S")
@@ -47,5 +48,15 @@ async def updateCurrent(updateLocation : UpdateLocation):
             return print("Update rssi ", updateLocation["location"])
         if doc.matched_count == 1 and doc.modified_count == 0:
             return print("rssi value is the same")
+    except Exception as err:
+        return print(err)
+    
+async def deleteCurrent(tag: str):
+    try:
+        doc =  db_intance.get_collection("CurrentLocation").delete_one({"tagMac": tag})
+        if doc.deleted_count == 1:
+            return True
+        if doc.deleted_count == 0:
+            return print("do not have this tag in Current")
     except Exception as err:
         return print(err)
