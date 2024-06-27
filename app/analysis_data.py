@@ -28,7 +28,7 @@ async def update_rssi():
             .find(
                 {
                     "deviceClass": {"$in": ["arubaTag", "iBeacon"]},
-                    "timeStamp": {"$gt": datetime.now() - timedelta(hours=8)},
+                    "timeStamp": {"$gt": datetime.now() - timedelta(hours=1)},
                 }
             )
             .sort([("timeStamp", -1)])
@@ -127,7 +127,7 @@ def scheduler():
     scheduler = BackgroundScheduler()
 
     # Job to update RSSI every minute
-    trigger_update = IntervalTrigger(seconds=5)
+    trigger_update = IntervalTrigger(minutes=1)
     scheduler.add_job(run_update_rssi, trigger_update)
 
     # Job to delete old data every 2 hours
