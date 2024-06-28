@@ -10,7 +10,7 @@ router = APIRouter()
 async def gets():
     try:
         result = []
-        doc = db_instance.get_collection("accessPoint").find({})
+        doc = db_instance.get_collection("accessPoint").find({}).sort({"apName": 1})
         if doc:
             for rs in doc:
                 rs['_id'] = str(rs['_id'])
