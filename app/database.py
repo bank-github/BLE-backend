@@ -11,4 +11,4 @@ class Database:
         return col
 
 # initialize the database intance
-db_intance = Database('mongodb://10.1.55.230:27017', "BLE")
+db_instance = Database('mongodb://10.1.55.230:27017', "BLE")

@@ -1,15 +1,19 @@
 from fastapi import FastAPI
+from datetime import datetime
+from starlette.middleware.cors import CORSMiddleware
+from .arrayTags import getTags_mac
 from app.routes import manageTags
 from app.routes import manageUser
 from app.routes import manageSignalReport
 from app.routes import manageLocationHistory
 from app.routes import manageCurrentlocation
 from .analysis_data import scheduler
-from datetime import datetime
-from starlette.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
 scheduler()
+getTags_mac()
+
 origins = [
     "*"
 ]

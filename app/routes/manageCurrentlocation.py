@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
-from app.database import db_intance
+from app.database import db_instance
 from app.models.modelLocaion import Location, UpdateLocation
 from app.message import getMsg
 
@@ -11,9 +11,9 @@ router = APIRouter()
 async def gets():
     try:
         result = []
-        doc = db_intance.get_collection("CurrentLocation").find().sort({"timeStamp": -1})
+        doc = db_instance.get_collection("CurrentLocation").find().sort({"timeStamp": -1})
         # Fetch tags data
-        tags = list(db_intance.get_collection("tags").find())
+        tags = list(db_instance.get_collection("tags").find())
         tags_dict = {tag["tagMac"]: tag for tag in tags}
         if doc:
             for rs in doc:
@@ -36,13 +36,13 @@ async def gets():
     
 async def updateCurrent(updateLocation : UpdateLocation):
     try:
-        doc = db_intance.get_collection("CurrentLocation").update_one(
+        doc = db_instance.get_collection("CurrentLocation").update_one(
             {'location': updateLocation["location"], 'tagMac': updateLocation["tagMac"]},
             {'$set': {"avg_rssi": updateLocation["avg_rssi"]}}
         )
         if doc.matched_count == 0:
-            db_intance.get_collection("CurrentLocation").delete_one({'tagMac': updateLocation["tagMac"]})
-            db_intance.get_collection("CurrentLocation").insert_one(updateLocation)
+            db_instance.get_collection("CurrentLocation").delete_one({'tagMac': updateLocation["tagMac"]})
+            db_instance.get_collection("CurrentLocation").insert_one(updateLocation)
             return True
         if doc.modified_count == 1:
             return print("Update rssi ", updateLocation["location"])
@@ -53,7 +53,7 @@ async def updateCurrent(updateLocation : UpdateLocation):
     
 async def deleteCurrent(tag: str):
     try:
-        doc =  db_intance.get_collection("CurrentLocation").delete_one({"tagMac": tag})
+        doc =  db_instance.get_collection("CurrentLocation").delete_one({"tagMac": tag})
         if doc.deleted_count == 1:
             return True
         if doc.deleted_count == 0:

@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Query
 from bson.objectid import ObjectId
-from app.database import db_intance
+from app.database import db_instance
 from app.models.modelTags import Tags, CreateTags, UpdateTags
 from app.message import getMsg
+from app.arrayTags import getTags_mac
 
 router = APIRouter()
 
@@ -11,8 +12,8 @@ router = APIRouter()
 async def gets():
     try:
         result = []
-        totalDoc = db_intance.get_collection("tags").count_documents({})
-        doc = db_intance.get_collection("tags").find({})
+        totalDoc = db_instance.get_collection("tags").count_documents({})
+        doc = db_instance.get_collection("tags").find({})
         if doc:
             for rs in doc:
                 rs['_id'] = str(rs['_id'])
@@ -35,8 +36,8 @@ async def get(page: int = Query(1, ge=1), perPage: int = Query(10, ge=1)):
     try:
         result = []
         skip = (page - 1) * perPage
-        totalDoc = db_intance.get_collection("tags").count_documents({})
-        doc = db_intance.get_collection("tags").find({}).skip(skip).limit(perPage)
+        totalDoc = db_instance.get_collection("tags").count_documents({})
+        doc = db_instance.get_collection("tags").find({}).skip(skip).limit(perPage)
         if doc:
             for d in doc:
                 d['_id'] = str(d['_id'])
@@ -61,8 +62,8 @@ async def getMac(mac: str):
     try:
         result = []
         query = {"tagMac": {"$regex": mac, "$options": "i"}}
-        totalDoc = db_intance.get_collection("tags").count_documents(query)
-        doc = db_intance.get_collection("tags").find(query)
+        totalDoc = db_instance.get_collection("tags").count_documents(query)
+        doc = db_instance.get_collection("tags").find(query)
         if doc:
             for rs in doc:
                 rs['_id'] = str(rs['_id'])
@@ -81,13 +82,14 @@ async def getMac(mac: str):
 
 # not in use now
 @router.post('/add')
-async def add(tags : Tags):
+async def add(tags : CreateTags):
     try:
         rs = {}
-        doc = db_intance.get_collection("Setting_Message").insert_one(tags.dict())
+        doc = db_instance.get_collection("tags").insert_one(tags.dict())
         rs['_id'] = str(doc.inserted_id)
         result = rs | tags.dict()
         if result:
+            getTags_mac()
             return result
         else:
             raise HTTPException(status_code=404, detail="setting_description")
@@ -102,7 +104,7 @@ async def update(id: str, updateTags : UpdateTags):
         if not len(id)== 24:
             raise HTTPException(status_code=403, detail=getMsg(40300))
         rs = {}
-        doc = db_intance.get_collection("tags").update_one(
+        doc = db_instance.get_collection("tags").update_one(
             {'_id':ObjectId(id)},
             {'$set': updateTags.dict(exclude_unset=True)}
         )
@@ -128,7 +130,7 @@ async def delete(id: str):
     try:
         if not len(id) == 24:
             raise HTTPException(status_code=403, detail=getMsg(40300))
-        doc = db_intance.get_collection("tags").delete_one({'_id':ObjectId(id)})
+        doc = db_instance.get_collection("tags").delete_one({'_id':ObjectId(id)})
         if doc.deleted_count == 1:
             return {"detail": id + " deleted"}
         else:

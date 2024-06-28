@@ -4,9 +4,10 @@ from typing import Optional
 
 class Tags(BaseModel):
      tagMac: str
-     assetName: str
-     description: str
-     deviceClass: str
+     assetName: Optional[str] = "unknown"
+     battery : Optional[str] = "-"
+     description: Optional[str] = "-"
+     deviceClass: Optional[str] = "-"
 
 class CreateTags(Tags):
      pass

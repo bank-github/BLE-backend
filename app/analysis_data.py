@@ -1,11 +1,12 @@
 from fastapi import FastAPI, APIRouter
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
-from app.database import db_intance
+from app.database import db_instance
 from datetime import datetime, timedelta
 import numpy as np
 from app.routes.manageCurrentlocation import updateCurrent, deleteCurrent
 from app.routes.manageLocationHistory import updateHistory
+from app.arrayTags import get_registered
 import asyncio
 import threading
 
@@ -21,19 +22,18 @@ async def update_rssi():
         return
     try:
         print("Starting update_rssi function")
-
+        registered_tags = get_registered()
         # Fetch data with deviceClass "arubaTag" or "iBeacon"
         data = list(
-            db_intance.get_collection("SignalReport")
+            db_instance.get_collection("SignalReport")
             .find(
                 {
-                    "deviceClass": {"$in": ["arubaTag", "iBeacon"]},
+                    "tagMac": {"$in": registered_tags},
                     "timeStamp": {"$gt": datetime.now() - timedelta(seconds=40)},
                 }
             )
             .sort([("timeStamp", -1)])
         )
-
         if data:
             # Convert timeStamp to datetime if necessary
             for dt in data:
@@ -65,15 +65,12 @@ async def update_rssi():
 
                 # Prepare the data for insertion
                 output_json = list(highest_rssi_per_tagMac.values())
+                print(output_json)
 
-            # find all tags
-            tags = db_intance.get_collection("tags").find({})
-            # get tagMac to array
-            tags_tagMac = {tag["tagMac"] for tag in tags if "tagMac" in tag}
             output_tagMac = {tag["tagMac"] for tag in output_json if "tagMac" in tag}
             # find common value in output and tags
-            common_tags = set(tags_tagMac).intersection(output_tagMac)
-            not_common_tags = [tag for tag in tags_tagMac if tag not in common_tags]
+            common_tags = set(registered_tags).intersection(output_tagMac)
+            not_common_tags = [tag for tag in registered_tags if tag not in common_tags]
             for output in output_json:
                 create = await updateCurrent(output)
                 if create:
@@ -100,10 +97,10 @@ def run_update_rssi():
 
 async def delete_old_data():
     print("Starting delete_old_data function")
-    data = list(db_intance.get_collection("SignalReport").find())
+    data = list(db_instance.get_collection("SignalReport").find())
     latest_timestamp = max(record["timeStamp"] for record in data)
     cutoff_time = latest_timestamp - timedelta(minutes=10)
-    result = db_intance.get_collection("SignalReport").delete_many({
+    result = db_instance.get_collection("SignalReport").delete_many({
         'timeStamp': {'$lt': cutoff_time}
     })
     print(f"Deleted {result.deleted_count} documents older than {cutoff_time}")
@@ -117,8 +114,9 @@ def scheduler():
     scheduler = BackgroundScheduler()
 
     # Job to update RSSI every minute
-    trigger_update = IntervalTrigger(minutes=1)
+    trigger_update = IntervalTrigger(seconds=30)
     scheduler.add_job(run_update_rssi, trigger_update)
+    
 
     # Job to delete old data every 2 hours
     trigger_delete = IntervalTrigger(minutes=10)
