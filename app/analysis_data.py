@@ -4,7 +4,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from app.database import db_instance
 from datetime import datetime, timedelta
 import numpy as np
-from app.routes.manageCurrentlocation import updateCurrent, deleteCurrent
+from app.routes.manageCurrentlocation import updateCurrent
 from app.routes.manageLocationHistory import updateHistory
 from app.arrayTags import get_registered
 import asyncio
@@ -29,7 +29,7 @@ async def update_rssi():
             .find(
                 {
                     "tagMac": {"$in": registered_tags},
-                    "timeStamp": {"$gt": datetime.now() - timedelta(seconds=40)},
+                    "timeStamp": {"$gt": datetime.now() - timedelta(hours=7, seconds=40)},
                 }
             )
             .sort([("timeStamp", -1)])
@@ -71,20 +71,21 @@ async def update_rssi():
             # find common value in output and tags
             common_tags = set(registered_tags).intersection(output_tagMac)
             not_common_tags = [tag for tag in registered_tags if tag not in common_tags]
+            print(not_common_tags)
             for output in output_json:
                 create = await updateCurrent(output)
                 if create:
                     await updateHistory(output)
-            # delete data not update next
+            # change data not have signal
             for tag in not_common_tags:
-                delete = await deleteCurrent(tag)
-                if delete:
-                    data = {
+                data = {
                         "tagMac": tag,
                         "location": "Lost signal",
                         "avg_rssi": "-",
                         "timeStamp": datetime.now(),
                     }
+                lost = await updateCurrent(data)
+                if lost:
                     await updateHistory(data)
         else:
             print("No data to insert")

@@ -59,7 +59,7 @@ async def update(id: str, modelAccessPoint : UpdateAccessPoint):
     print(modelAccessPoint.dict(exclude_unset=True))
     try:
         rs = {}
-        doc = db_instance.get_collection("AccessPoint").update_one(
+        doc = db_instance.get_collection("accessPoint").update_one(
             {'_id':ObjectId(id)},
             {'$set': modelAccessPoint.dict(exclude_unset=True)}
         )
