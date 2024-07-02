@@ -56,12 +56,12 @@ async def updateCurrent(updateLocation : UpdateLocation):
     except Exception as err:
         return print(err)
     
-async def deleteCurrent(tag: str):
-    try:
-        doc =  db_instance.get_collection("CurrentLocation").delete_one({"tagMac": tag})
-        if doc.deleted_count == 1:
-            return True
-        if doc.deleted_count == 0:
-            return print("do not have this tag in Current")
-    except Exception as err:
-        return print(err)
+# async def deleteCurrent(tag: str):
+#     try:
+#         doc =  db_instance.get_collection("CurrentLocation").delete_one({"tagMac": tag})
+#         if doc.deleted_count == 1:
+#             return True
+#         if doc.deleted_count == 0:
+#             return False
+#     except Exception as err:
+#         return print(err)
