@@ -13,10 +13,11 @@ async def gets(query:str):
         result = []
         find = {}
         if query == "use":
-            find = {"location": {"$ne": "Lost signal"}}
+            find = {"location": {"$ne": "No Signal"}}
         if query == "lost":
-            find = {"location":"Lost signal"}
+            find = {"location":"No Signal"}
         doc = db_instance.get_collection("CurrentLocation").find(find).sort({"timeStamp": -1})
+        totalDoc = db_instance.get_collection("CurrentLocation").count_documents(find)
         # Fetch tags data
         tags = list(db_instance.get_collection("tags").find())
         tags_dict = {tag["tagMac"]: tag for tag in tags}
@@ -30,7 +31,10 @@ async def gets(query:str):
                 dt_object = datetime.fromisoformat(str(rs['timeStamp']))+timedelta(hours=7)
                 rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M:%S")
                 result.append(rs)
-            return result
+            return {
+                'total': totalDoc,
+                'data': result
+            }
         else:
             raise HTTPException(status_code=404, detail=getMsg(40402))
     except HTTPException as httpErr:

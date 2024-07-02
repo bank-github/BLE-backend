@@ -126,12 +126,15 @@ async def update(id: str, updateTags : UpdateTags):
 
 # delete specific tag
 @router.delete('/delete/{id}')
-async def delete(id: str):
+async def delete(id: str, updateTags : UpdateTags):
     try:
         if not len(id) == 24:
             raise HTTPException(status_code=403, detail=getMsg(40300))
         doc = db_instance.get_collection("tags").delete_one({'_id':ObjectId(id)})
         if doc.deleted_count == 1:
+            getTags_mac()
+            db_instance.get_collection("LocationHistory").delete_many(updateTags.dict(exclude_unset=True))
+            db_instance.get_collection("CurrentLocation").delete_many(updateTags.dict(exclude_unset=True))
             return {"detail": id + " deleted"}
         else:
             raise HTTPException(status_code=404, detail=getMsg(40401))

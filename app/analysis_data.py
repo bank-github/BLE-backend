@@ -29,7 +29,7 @@ async def update_rssi():
             .find(
                 {
                     "tagMac": {"$in": registered_tags},
-                    "timeStamp": {"$gt": datetime.now() - timedelta(seconds=40)},
+                    "timeStamp": {"$gt": datetime.now() - timedelta(seconds=50)},
                 }
             )
             .sort([("timeStamp", -1)])
@@ -80,7 +80,7 @@ async def update_rssi():
             for tag in not_common_tags:
                 data = {
                         "tagMac": tag,
-                        "location": "Lost signal",
+                        "location": "No Signal",
                         "avg_rssi": "-",
                         "timeStamp": datetime.now(),
                     }
@@ -115,7 +115,7 @@ def scheduler():
     scheduler = BackgroundScheduler()
 
     # Job to update RSSI every minute
-    trigger_update = IntervalTrigger(seconds=30)
+    trigger_update = IntervalTrigger(seconds=40)
     scheduler.add_job(run_update_rssi, trigger_update)
     
 
