@@ -3,9 +3,9 @@ from typing import Optional, List
 
 class AccessPoint(BaseModel):
      apName: str
-     location: str
-     description: Optional[List[str]] = "-"
+     location: Optional[str] = None
+     description: Optional[str] = None
 
 class UpdateAccessPoint(AccessPoint):
-     password: Optional[str] = None
+     apName: Optional[str] = None
      

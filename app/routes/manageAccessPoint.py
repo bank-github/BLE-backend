@@ -55,12 +55,12 @@ async def get(id: str):
 #         raise HTTPException(status_code=500, detail=getMsg(50003))
 
 @router.patch('/update/{id}')
-async def update(id: str, modelAccessPoint : UpdateAccessPoint):
+async def update(id: str, modelAccessPoint: UpdateAccessPoint):
     print(modelAccessPoint.dict(exclude_unset=True))
     try:
         rs = {}
-        doc = db_instance.get_collection("AccessPoint").update_one(
-            {'_id':ObjectId(id)},
+        doc = db_instance.get_collection("accessPoint").update_one(
+            {'_id': ObjectId(id)},
             {'$set': modelAccessPoint.dict(exclude_unset=True)}
         )
         print(doc)
