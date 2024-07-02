@@ -7,11 +7,16 @@ from app.message import getMsg
 
 router = APIRouter()
 
-@router.get('/gets')
-async def gets():
+@router.get('/gets/{query}')
+async def gets(query:str):
     try:
         result = []
-        doc = db_instance.get_collection("CurrentLocation").find().sort({"timeStamp": -1})
+        find = {}
+        if query == "use":
+            find = {"location": {"$ne": "Lost signal"}}
+        if query == "lost":
+            find = {"location":"Lost signal"}
+        doc = db_instance.get_collection("CurrentLocation").find(find).sort({"timeStamp": -1})
         # Fetch tags data
         tags = list(db_instance.get_collection("tags").find())
         tags_dict = {tag["tagMac"]: tag for tag in tags}
