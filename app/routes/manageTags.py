@@ -96,6 +96,8 @@ async def add(tags : CreateTags):
             return result
         else:
             raise HTTPException(status_code=404, detail="setting_description")
+    except HTTPException as httpErr:
+        raise httpErr
     except Exception as err:
         print(err)
         raise HTTPException(status_code=500, detail=getMsg(50003))
