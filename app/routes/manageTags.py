@@ -85,6 +85,9 @@ async def getMac(mac: str):
 async def add(tags : CreateTags):
     try:
         rs = {}
+        docTag = db_instance.get_collection("tags").find_one({"tagMac": tags.tagMac})
+        if docTag:
+            raise HTTPException(status_code=403, detail=getMsg(40301))
         doc = db_instance.get_collection("tags").insert_one(tags.dict())
         rs['_id'] = str(doc.inserted_id)
         result = rs | tags.dict()
