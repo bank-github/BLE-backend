@@ -29,7 +29,7 @@ async def update_rssi():
             .find(
                 {
                     "tagMac": {"$in": registered_tags},
-                    "timeStamp": {"$gt": datetime.now() - timedelta(seconds=50)},
+                    "timeStamp": {"$gte": datetime.now() - timedelta(minutes=1), "$lte": datetime.now() - timedelta(seconds=30)},
                 }
             )
             .sort([("timeStamp", -1)])
