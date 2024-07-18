@@ -24,12 +24,13 @@ async def update_rssi():
         print("Starting update_rssi function")
         registered_tags = get_registered()
         # Fetch data with deviceClass "arubaTag" or "iBeacon"
+        datenow = datetime.now()
         data = list(
             db_instance.get_collection("SignalReport")
             .find(
                 {
                     "tagMac": {"$in": registered_tags},
-                    "timeStamp": {"$gte": datetime.now() - timedelta(minutes=1), "$lte": datetime.now() - timedelta(seconds=30)},
+                    "timeStamp": {"$gte": datenow - timedelta(minutes=1), "$lte": datenow - timedelta(seconds=30)},
                 }
             )
             .sort([("timeStamp", -1)])
