@@ -105,6 +105,9 @@ async def delete_old_data():
     result = db_instance.get_collection("SignalReport").delete_many({
         'timeStamp': {'$lt': cutoff_time}
     })
+    result = db_instance.get_collection("LocationHistory").delete_many({
+        'timeStamp': {'$lt': datetime.now()-timedelta(days=1)}
+    })
     print(f"Deleted {result.deleted_count} documents older than {cutoff_time}")
 
 def run_delete_old_data():
