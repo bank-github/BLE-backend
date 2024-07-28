@@ -48,7 +48,7 @@ async def updateCurrent(updateLocation : UpdateLocation):
     try:
         doc = db_instance.get_collection("CurrentLocation").update_one(
             {'location': updateLocation["location"], 'tagMac': updateLocation["tagMac"]},
-            {'$set': {"avg_rssi": updateLocation["avg_rssi"]}}
+            {'$set': {"max_rssi": updateLocation["max_rssi"]}}
         )
         if doc.matched_count == 0:
             db_instance.get_collection("CurrentLocation").delete_one({'tagMac': updateLocation["tagMac"]})
