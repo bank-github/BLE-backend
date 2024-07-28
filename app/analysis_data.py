@@ -49,7 +49,7 @@ async def update_rssi():
                 for record in data:
                     tag_mac = record["tagMac"]
                     location = record["location"]
-                    max_rssi = [rssi["rssi"] for rssi in record["rssi"]] 
+                    max_rssi = record["rssi"]
 
                     # Update the highest  max_rssi for each tagMac
                     if (
