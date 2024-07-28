@@ -10,7 +10,7 @@ class SignalReport(BaseModel):
      tagMac: str
      location: str
      deviceClass: str
-     rssi: list[rssi]
+     rssi: float
      timeStamp: date 
      major: Optional[str] = None
      minor: Optional[str] = None
