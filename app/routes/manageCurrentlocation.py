@@ -27,6 +27,7 @@ async def gets(query:str):
                 if tag_mac in tags_dict:
                     rs["assetName"] = tags_dict[tag_mac].get("assetName")
                     rs["deviceClass"] = tags_dict[tag_mac].get("deviceClass")
+                    rs["assetType"] = tags_dict[tag_mac].get("assetType")
                 rs['_id'] = str(rs['_id'])
                 dt_object = datetime.fromisoformat(str(rs['timeStamp']))+timedelta(hours=7)
                 rs['timeStamp'] = dt_object.strftime("%Y-%m-%d %H:%M:%S")
