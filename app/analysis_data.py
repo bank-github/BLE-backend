@@ -49,18 +49,17 @@ async def update_rssi():
                 for record in data:
                     tag_mac = record["tagMac"]
                     location = record["location"]
-                    rssi_values = [rssi["rssi"] for rssi in record["rssi"]]
-                    avg_rssi = np.mean(rssi_values)
+                    max_rssi = [rssi["rssi"] for rssi in record["rssi"]] 
 
-                    # Update the highest avg_rssi for each tagMac
+                    # Update the highest  max_rssi for each tagMac
                     if (
                         tag_mac not in highest_rssi_per_tagMac
-                        or avg_rssi > highest_rssi_per_tagMac[tag_mac]["avg_rssi"]
+                        or  max_rssi > highest_rssi_per_tagMac[tag_mac]["max_rssi"]
                     ):
                         highest_rssi_per_tagMac[tag_mac] = {
                             "tagMac": tag_mac,
                             "location": location,
-                            "avg_rssi": avg_rssi,
+                            "max_rssi":  max_rssi,
                             "timeStamp": record["timeStamp"],
                         }
 
@@ -82,7 +81,7 @@ async def update_rssi():
                 data = {
                         "tagMac": tag,
                         "location": "No Signal",
-                        "avg_rssi": "-",
+                        "max_rssi": "-",
                         "timeStamp": datetime.now(),
                     }
                 lost = await updateCurrent(data)
@@ -116,7 +115,7 @@ def scheduler():
     scheduler = BackgroundScheduler()
 
     # Job to update RSSI every minute
-    trigger_update = IntervalTrigger(seconds=40)
+    trigger_update = IntervalTrigger(seconds=10)
     scheduler.add_job(run_update_rssi, trigger_update)
     
 
